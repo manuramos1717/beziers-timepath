@@ -11,6 +11,8 @@ body {
 body.page-360 {
   height: 100%;
   overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
 }
 
 body.page-video,
@@ -21,9 +23,12 @@ body.page-index {
     linear-gradient(180deg, #120c05 0%, #050505 100%);
 }
 
-a-scene {
+a-scene,
+canvas {
   width: 100vw;
   height: 100vh;
+  touch-action: none;
+  overscroll-behavior: none;
 }
 
 .start-overlay {
