@@ -130,10 +130,9 @@
         const deltaY = y - lastY;
 
         rigYaw += deltaX * 0.16;
-        rigPitch += deltaY * 0.16;
-        rigPitch = clamp(rigPitch, -80, 80);
+        rigPitch = 0;
 
-        rig.setAttribute("rotation", `${rigPitch} ${rigYaw} 0`);
+        rig.setAttribute("rotation", `0 ${rigYaw} 0`);
 
         lastX = x;
         lastY = y;
@@ -166,10 +165,9 @@
       const deltaY = event.clientY - lastY;
 
       rigYaw += deltaX * 0.16;
-      rigPitch += deltaY * 0.16;
-      rigPitch = clamp(rigPitch, -80, 80);
+      rigPitch = 0;
 
-      rig.setAttribute("rotation", `${rigPitch} ${rigYaw} 0`);
+      rig.setAttribute("rotation", `0 ${rigYaw} 0`);
 
       lastX = event.clientX;
       lastY = event.clientY;
