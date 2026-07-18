@@ -2,241 +2,51 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
+  />
 
   <title>Marché antique de Baeterrae</title>
 
-  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
   <link rel="stylesheet" href="style.css" />
+
+  <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .youtube-360-wrapper {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+    }
+
+    .youtube-360-wrapper iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+  </style>
 </head>
 
 <body class="page-360">
-  <div id="startOverlay" class="start-overlay">
-    <h1>Marché antique de Baeterrae</h1>
-    <p>Appuyez pour lancer la vidéo 360°.</p>
-    <p class="small">Tournez le téléphone pour regarder autour de vous.</p>
-    <button id="startButton" type="button">Lancer</button>
-  </div>
-
-  <a-scene
-    id="scene360"
-    vr-mode-ui="enabled: true"
-    renderer="antialias: true"
-    device-orientation-permission-ui="enabled: false"
-    embedded
-  >
-    <a-assets>
-      <video
-        id="video360"
-        src="https://pub-158027345d6a49fdba1ea449be246598.r2.dev/marche-baeterrae-360.mp4"
-        preload="auto"
-        crossorigin="anonymous"
-        playsinline
-        webkit-playsinline
-        loop
-      ></video>
-    </a-assets>
-
-    <a-videosphere src="#video360" rotation="0 -90 0"></a-videosphere>
-
-    <a-entity id="cameraRig" rotation="0 0 0">
-      <a-camera
-        id="camera360"
-        camera="fov: 75"
-        look-controls="magicWindowTrackingEnabled: true; touchEnabled: false; mouseEnabled: false"
-        wasd-controls="enabled: false"
-      ></a-camera>
-    </a-entity>
-  </a-scene>
-
-  <script>
-    const overlay = document.getElementById("startOverlay");
-    const button = document.getElementById("startButton");
-    const video = document.getElementById("video360");
-    const scene = document.getElementById("scene360");
-    const camera = document.getElementById("camera360");
-    const rig = document.getElementById("cameraRig");
-
-    button.addEventListener("click", async () => {
-  overlay.style.display = "none";
-
-  if (
-    typeof DeviceOrientationEvent !== "undefined" &&
-    typeof DeviceOrientationEvent.requestPermission === "function"
-  ) {
-    try {
-      await DeviceOrientationEvent.requestPermission();
-    } catch (error) {
-      console.warn("Permission gyroscope refusée ou indisponible :", error);
-    }
-  }
-
-  video.muted = false;
-
-  try {
-  await video.play();
-  applyOrientationFov(true);
-} catch (error) {
-  video.muted = true;
-  await video.play();
-  applyOrientationFov(true);
-}
-});
-
-    function clamp(value, min, max) {
-      return Math.min(Math.max(value, min), max);
-    }
-
-    function getTouchDistance(touches) {
-      const dx = touches[0].clientX - touches[1].clientX;
-      const dy = touches[0].clientY - touches[1].clientY;
-      return Math.sqrt(dx * dx + dy * dy);
-    }
-
-    let isDragging = false;
-    let lastX = 0;
-    let lastY = 0;
-
-    let rigYaw = 0;
-    let rigPitch = 0;
-
-    const portraitFov = 75;
-const landscapeFov = 40;
-
-let currentFov = portraitFov;
-let lastOrientationMode = null;
-
-const minFov = 20;
-const maxFov = 110;
-
-let startDistance = null;
-let startFov = portraitFov;
-
-function setFov(value) {
-  currentFov = clamp(value, minFov, maxFov);
-  camera.setAttribute("camera", "fov", currentFov);
-}
-
-function getOrientationMode() {
-  return window.innerWidth > window.innerHeight ? "landscape" : "portrait";
-}
-
-function applyOrientationFov(force = false) {
-  const mode = getOrientationMode();
-
-  if (!force && mode === lastOrientationMode) {
-    return;
-  }
-
-  lastOrientationMode = mode;
-
-  if (mode === "landscape") {
-    setFov(landscapeFov);
-  } else {
-    setFov(portraitFov);
-  }
-}
-
-window.addEventListener("resize", () => {
-  applyOrientationFov(false);
-
-  setTimeout(() => {
-    applyOrientationFov(false);
-  }, 250);
-});
-
-window.addEventListener("orientationchange", () => {
-  applyOrientationFov(false);
-
-  setTimeout(() => {
-    applyOrientationFov(false);
-  }, 300);
-});
-
-    scene.addEventListener("touchstart", (event) => {
-      if (event.touches.length === 1) {
-        event.preventDefault();
-        isDragging = true;
-        lastX = event.touches[0].clientX;
-        lastY = event.touches[0].clientY;
-      }
-
-      if (event.touches.length === 2) {
-        event.preventDefault();
-        isDragging = false;
-        startDistance = getTouchDistance(event.touches);
-        startFov = currentFov;
-      }
-    }, { passive: false });
-
-    scene.addEventListener("touchmove", (event) => {
-      if (event.touches.length === 1 && isDragging) {
-        event.preventDefault();
-
-        const x = event.touches[0].clientX;
-        const y = event.touches[0].clientY;
-
-        const deltaX = x - lastX;
-        const deltaY = y - lastY;
-
-        rigYaw += deltaX * 0.16;
-        rigPitch = 0;
-
-        rig.setAttribute("rotation", `0 ${rigYaw} 0`);
-
-        lastX = x;
-        lastY = y;
-      }
-
-      if (event.touches.length === 2 && startDistance) {
-        event.preventDefault();
-
-        const currentDistance = getTouchDistance(event.touches);
-        const nextFov = startFov * (startDistance / currentDistance);
-        setFov(nextFov);
-      }
-    }, { passive: false });
-
-    scene.addEventListener("touchend", () => {
-      isDragging = false;
-      startDistance = null;
-    }, { passive: false });
-
-    scene.addEventListener("mousedown", (event) => {
-      isDragging = true;
-      lastX = event.clientX;
-      lastY = event.clientY;
-    });
-
-    scene.addEventListener("mousemove", (event) => {
-      if (!isDragging) return;
-
-      const deltaX = event.clientX - lastX;
-      const deltaY = event.clientY - lastY;
-
-      rigYaw += deltaX * 0.16;
-      rigPitch = 0;
-
-      rig.setAttribute("rotation", `0 ${rigYaw} 0`);
-
-      lastX = event.clientX;
-      lastY = event.clientY;
-    });
-
-    scene.addEventListener("mouseup", () => {
-      isDragging = false;
-    });
-
-    scene.addEventListener("mouseleave", () => {
-      isDragging = false;
-    });
-
-    scene.addEventListener("wheel", (event) => {
-      event.preventDefault();
-
-      const nextFov = currentFov + event.deltaY * 0.03;
-      setFov(nextFov);
-    }, { passive: false });
-  </script>
+  <main class="youtube-360-wrapper">
+    <iframe
+      src="https://www.youtube.com/embed/HTOLs91MOc8?rel=0"
+      title="Marché antique de Béziers — Vidéo 360°"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen
+    ></iframe>
+  </main>
 </body>
 </html>
